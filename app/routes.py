@@ -34,12 +34,15 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        print(f"Email: {email}, Password: {password}")  # Debugging print
+
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
             login_user(user)
             return redirect(url_for('main.index'))
         flash('Invalid email or password.', 'danger')
     return render_template('login.html')
+
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
