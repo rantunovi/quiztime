@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Exam</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        nav {
+            background-color: #5e17eb;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .join-exam-button {
+            background-color: #5e17eb;
+        }
+
+        .join-exam-button:hover {
+            background-color: #4b0eaf;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <nav class="fixed w-full top-0 bg-gray-50 p-2 shadow" style="background-color: #5e17eb;">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ url_for('main.index') }}">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-12 w-17">
+                </a>
+            </div>
+            {% if current_user.is_authenticated %}
+            <div class="flex items-center space-x-4">
+                {% if session.get('lang', 'en') == 'en' %}
+                <a href="{{ url_for('main.set_language', language='hr') }}">
+                    <img src="{{ url_for('static', filename='img/uk.png') }}" alt="Switch to Croatian"
+                        class="flag-icon">
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.set_language', language='en') }}">
+                    <img src="{{ url_for('static', filename='img/hr.png') }}" alt="Switch to English" class="flag-icon">
+                </a>
+                {% endif %}
+                <span class="text-white font-medium">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+                <a href="{{ url_for('main.logout') }}"
+                    class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">{{ get_translation('logout')
+                    }}</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-20 px-4">
+        <div class="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+                {% for category, message in messages %}
+                <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+            <form action="{{ url_for('main.join_exam') }}" method="post">
+                <div class="mb-4">
+                    <label for="exam_code" class="block text-gray-700 font-medium mb-2">{{
+                        get_translation('enter_exam_code') }}</label>
+                    <input type="text" id="exam_code" name="exam_code"
+                        class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                </div>
+                <button type="submit"
+                    class="w-full join-exam-button text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                    {{ get_translation('join_exam') }}
+                </button>
+            </form>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

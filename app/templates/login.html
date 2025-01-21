@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <style>
+        body {
+            background-color: #ffffff;
+            /* White background color for the body */
+        }
+
+        nav {
+            background-color: #5e17eb;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .login-button {
+            background-color: #5e17eb;
+            /* Matches header color */
+        }
+
+        .login-button:hover {
+            background-color: #4b0eaf;
+            /* Slightly darker shade */
+        }
+
+        .form-container {
+            border: 1px solid #e5e7eb;
+            /* Light gray border for the form container */
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <nav class="bg-gray-50 p-2 shadow" style="background-color: #5e17eb;">
+        <div class="container mx-auto flex items-center justify-center">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-12 w-17">
+            <div class="ml-2">
+                {% if session.get('lang', 'en') == 'en' %}
+                <a href="{{ url_for('main.set_language', language='hr') }}">
+                    <img src="{{ url_for('static', filename='img/uk.png') }}" alt="Switch to Croatian"
+                        class="flag-icon">
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.set_language', language='en') }}">
+                    <img src="{{ url_for('static', filename='img/hr.png') }}" alt="Switch to English" class="flag-icon">
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-20 px-4">
+        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md form-container">
+            <h2 class="text-2xl font-semibold text-center mb-4 text-[#5e17eb]">{{ get_translation('login') }}</h2>
+            <form action="{{ url_for('main.login') }}" method="post" class="space-y-4">
+                <div>
+                    <input type="email" id="email" name="email"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Email" required>
+                </div>
+                <div>
+                    <input type="password" id="password" name="password"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="{{ get_translation('password') }}" required>
+                </div>
+                <button type="submit"
+                    class="w-full login-button text-white py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{{
+                    get_translation('login') }}</button>
+            </form>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('main.register') }}" class="text-blue-500 hover:underline">{{
+                    get_translation('no_account') }}</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

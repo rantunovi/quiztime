@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ get_translation('dashboard') }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <style>
+        body {
+            padding-top: 3rem;
+            background-color: #ffffff;
+        }
+
+        nav {
+            background-color: #5e17eb;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .lobby-button,
+        .create-exam-button {
+            background-color: #5e17eb;
+        }
+
+        .lobby-button:hover,
+        .create-exam-button:hover {
+            background-color: #4b0eaf;
+        }
+
+        .subtle-button {
+            background-color: #d1d5db;
+            color: #252a31;
+        }
+
+        .subtle-button:hover {
+            background-color: #b8bec5;
+        }
+
+        .exam-item {
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <nav class="fixed w-full top-0 bg-gray-50 p-2 shadow" style="background-color: #5e17eb;">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ url_for('main.index') }}">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-12 w-17">
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                {% if session.get('lang', 'en') == 'en' %}
+                <a href="{{ url_for('main.set_language', language='hr') }}">
+                    <img src="{{ url_for('static', filename='img/uk.png') }}" alt="Switch to Croatian"
+                        class="flag-icon">
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.set_language', language='en') }}">
+                    <img src="{{ url_for('static', filename='img/hr.png') }}" alt="Switch to English" class="flag-icon">
+                </a>
+                {% endif %}
+                <span class="text-white font-medium">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+                <a href="{{ url_for('main.logout') }}"
+                    class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">{{
+                    get_translation('logout') }}
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-10 px-4">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">{{ get_translation('dashboard') }}</h2>
+
+        <div class="space-y-4">
+            {% for exam in exams %}
+            <div class="bg-white rounded-lg p-6 exam-item">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h5 class="text-xl font-medium text-gray-700">{{ exam.name }}</h5>
+                    </div>
+                    <div class="flex space-x-2">
+                        {% if exam.active == 'not_started' %}
+                        <button type="button" class="lobby-button text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                            id="exam-lobby-button" data-exam-id="{{ exam.id }}">{{ get_translation('exam_lobby')
+                            }}</button>
+                        {% elif exam.active == 'started' %}
+                        <form action="{{ url_for('main.stop_exam', exam_id=exam.id) }}" method="post">
+                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">{{
+                                get_translation('stop_exam') }}</button>
+                        </form>
+                        {% elif exam.active == 'stopped' %}
+                        <a href="{{ url_for('main.exam_results', exam_id=exam.id) }}"
+                            class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">{{
+                            get_translation('exam_results') }}</a>
+                        {% endif %}
+                        <a href="{{ url_for('main.exam_data', exam_id=exam.id) }}"
+                            class="subtle-button px-4 py-2 rounded-lg">{{ get_translation('edit_exam') }}</a>
+                        <form action="{{ url_for('main.delete_exam', exam_id=exam.id) }}" method="post"
+                            style="display:inline;">
+                            <button type="submit" class="subtle-button px-4 py-2 rounded-lg">{{
+                                get_translation('delete_exam') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-6 pb-10">
+            <a href="{{ url_for('main.create_exam') }}" class="create-exam-button text-white px-6 py-3 rounded-lg">{{
+                get_translation('create_exam') }}</a>
+        </div>
+    </div>
+</body>
+
+</html>
