@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        nav {
+            background-color: #5e17eb;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .username-text {
+            color: #ffffff;
+        }
+
+        .logout-button {
+            background-color: #ff5e57;
+        }
+
+        .logout-button:hover {
+            background-color: #ff3b30;
+        }
+
+        .highlight-block {
+            display: inline-block;
+            background-color: #e2e8f0;
+            padding: 5px 10px;
+            border-radius: 0.375rem;
+            margin-bottom: 16px;
+        }
+
+        .save-button {
+            background-color: #5e17eb;
+        }
+
+        .save-button:hover {
+            background-color: #4b0eaf;
+        }
+
+        .edit-delete-text {
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .edit-delete-text:hover {
+            color: #5e17eb;
+        }
+
+        .exam-item {
+            border: 1px solid #e5e7eb;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .points-badge {
+            background-color: #e2e8f0;
+            color: black;
+            font-weight: bold;
+            height: 26px;
+            padding: 4px 8px;
+            border-radius: 5px;
+            display: inline;
+            font-size: 0.75rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .edit-exam-name-container {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            background-color: #e2e8f0;
+            border-radius: 0.375rem;
+            margin-bottom: 16px;
+            margin-right: 8px;
+        }
+
+        .edit-exam-name-container input {
+            padding: 4px 8px;
+            border-radius: 0.375rem;
+            border: 1px solid #cbd5e0;
+            margin-right: 8px;
+        }
+
+        .edit-exam-name-container input:focus {
+            outline: none;
+            border-color: #5e17eb;
+        }
+
+        .exam-name-text {
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <nav class="fixed w-full top-0 bg-gray-50 p-2 shadow" style="background-color: #5e17eb;">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ url_for('main.index') }}">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-12 w-17">
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                {% if session.get('lang', 'en') == 'en' %}
+                <a href="{{ url_for('main.set_language', language='hr') }}">
+                    <img src="{{ url_for('static', filename='img/uk.png') }}" alt="Switch to Croatian"
+                        class="flag-icon">
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.set_language', language='en') }}">
+                    <img src="{{ url_for('static', filename='img/hr.png') }}" alt="Switch to English" class="flag-icon">
+                </a>
+                {% endif %}
+                <span class="username-text font-medium">{{ current_user.first_name }} {{ current_user.last_name
+                    }}</span>
+                <a href="{{ url_for('main.logout') }}" class="text-white logout-button px-4 py-2 rounded-lg">{{
+                    get_translation('logout') }}
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-20 px-4">
+        <div class="flex items-center">
+            <div id="examNameContainer" class="edit-exam-name-container">
+                <h2 id="examName" class="exam-name-text text-lg font-semibold text-gray-700">{{ exam.name }}</h2>
+                <input type="text" id="editExamNameInput" value="{{ exam.name }}" style="display: none;">
+                <span id="editIcon" class="ml-2 cursor-pointer"><i class="fas fa-edit"></i></span>
+                <span id="confirmIcon" class="ml-2 cursor-pointer" style="display: none;"><i
+                        class="fas fa-check"></i></span>
+                <span id="cancelIcon" class="ml-2 cursor-pointer" style="display: none;"><i
+                        class="fas fa-times"></i></span>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-semibold mb-4 text-[#5e17eb]">{{ get_translation('add_question') }}</h2>
+        <div class="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-10">
+            <div class="md:w-1/2">
+                <form action="{{ url_for('main.exam_data', exam_id=exam.id) }}" method="post" class="space-y-4">
+                    <div>
+                        <label for="question_text" class="block text-gray-700">{{ get_translation('question_text')
+                            }}</label>
+                        <input type="text" id="question_text" name="question_text"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                    <div>
+                        <label for="option_a" class="block text-gray-700">{{ get_translation('option_a') }}</label>
+                        <input type="text" id="option_a" name="option_a"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                    <div>
+                        <label for="option_b" class="block text-gray-700">{{ get_translation('option_b') }}</label>
+                        <input type="text" id="option_b" name="option_b"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                    <div>
+                        <label for="option_c" class="block text-gray-700">{{ get_translation('option_c') }}</label>
+                        <input type="text" id="option_c" name="option_c"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                    <div>
+                        <label for="option_d" class="block text-gray-700">{{ get_translation('option_d') }}</label>
+                        <input type="text" id="option_d" name="option_d"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="w-1/2">
+                            <label for="correct_answer" class="block text-gray-700">{{ get_translation('correct_answer')
+                                }}
+                            </label>
+                            <select id="correct_answer" name="correct_answer"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required>
+                                <option value="a">{{ get_translation('option_a') }}</option>
+                                <option value="b">{{ get_translation('option_b') }}</option>
+                                <option value="c">{{ get_translation('option_c') }}</option>
+                                <option value="d">{{ get_translation('option_d') }}</option>
+                            </select>
+                        </div>
+                        <div class="w-1/2">
+                            <label for="points" class="block text-gray-700">{{ get_translation('points') }}</label>
+                            <input type="number" id="points" name="points"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="1" min="1" required>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full save-button text-white py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {{ get_translation('save_question') }}
+                    </button>
+                </form>
+            </div>
+            <div class="md:w-1/2">
+                <div id="questions_list" class="space-y-4">
+                    {% for question in questions %}
+                    <div class="bg-white p-4 rounded-lg exam-item">
+                        <div class="flex justify-between">
+                            <h5 class="font-semibold text-gray-800">{{ question.question_text }}</h5>
+                            <p class="points-badge">{{ question.points }}</p>
+                        </div>
+                        <ul class="mt-2 text-gray-600">
+                            <li{% if question.correct_answer=='a' %} class="font-bold" {% endif %}>a) {{
+                                question.option_a }}</li>
+                                <li{% if question.correct_answer=='b' %} class="font-bold" {% endif %}>b) {{
+                                    question.option_b }}</li>
+                                    <li{% if question.correct_answer=='c' %} class="font-bold" {% endif %}>c) {{
+                                        question.option_c }}</li>
+                                        <li{% if question.correct_answer=='d' %} class="font-bold" {% endif %}>d) {{
+                                            question.option_d }}</li>
+                        </ul>
+                        <div class="flex space-x-4 mt-4">
+                            <span class="edit-delete-text" data-question-id="{{ question.id }}"
+                                data-question-text="{{ question.question_text }}"
+                                data-option-a="{{ question.option_a }}" data-option-b="{{ question.option_b }}"
+                                data-option-c="{{ question.option_c }}" data-option-d="{{ question.option_d }}"
+                                data-correct-answer="{{ question.correct_answer }}"
+                                data-points="{{ question.points }}"><i class="fas fa-edit"></i></span>
+                            <form action="{{ url_for('main.delete_question', question_id=question.id) }}" method="post"
+                                style="display:inline;">
+                                <button type="submit"
+                                    class="edit-delete-text delete-button bg-transparent border-none p-0"><i
+                                        class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="text-2xl font-semibold mb-4">{{ get_translation('edit_question') }}</h2>
+            <form id="editForm" method="post" class="space-y-4">
+                <div>
+                    <label for="edit_question_text" class="block text-gray-700">{{ get_translation('question_text')
+                        }}</label>
+                    <input type="text" id="edit_question_text" name="question_text"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                </div>
+                <div>
+                    <label for="edit_option_a" class="block text-gray-700">{{ get_translation('option_a') }}</label>
+                    <input type="text" id="edit_option_a" name="option_a"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                </div>
+                <div>
+                    <label for="edit_option_b" class="block text-gray-700">{{ get_translation('option_b') }}</label>
+                    <input type="text" id="edit_option_b" name="option_b"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                </div>
+                <div>
+                    <label for="edit_option_c" class="block text-gray-700">{{ get_translation('option_c') }}</label>
+                    <input type="text" id="edit_option_c" name="option_c"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                </div>
+                <div>
+                    <label for="edit_option_d" class="block text-gray-700">{{ get_translation('option_d') }}</label>
+                    <input type="text" id="edit_option_d" name="option_d"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="w-1/2">
+                        <label for="edit_correct_answer" class="block text-gray-700">{{
+                            get_translation('correct_answer') }}</label>
+                        <select id="edit_correct_answer" name="correct_answer"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                            <option value="a">{{ get_translation('option_a') }}</option>
+                            <option value="b">{{ get_translation('option_b') }}</option>
+                            <option value="c">{{ get_translation('option_c') }}</option>
+                            <option value="d">{{ get_translation('option_d') }}</option>
+                        </select>
+                    </div>
+                    <div class="w-1/2">
+                        <label for="edit_points" class="block text-gray-700">{{ get_translation('points') }}</label>
+                        <input type="number" id="edit_points" name="points"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value="1" min="1" required>
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full save-button text-white py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{{
+                    get_translation('save_changes') }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Get modal element
+        var modal = document.getElementById("editModal");
+
+        // Get close button element
+        var closeBtn = document.getElementsByClassName("close")[0];
+
+        // Get all edit buttons
+        var editButtons = document.querySelectorAll(".edit-delete-text");
+
+        // Attach event listeners to edit buttons
+        editButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                var questionId = this.dataset.questionId;
+                var questionText = this.dataset.questionText;
+                var optionA = this.dataset.optionA;
+                var optionB = this.dataset.optionB;
+                var optionC = this.dataset.optionC;
+                var optionD = this.dataset.optionD;
+                var correctAnswer = this.dataset.correctAnswer;
+                var points = this.dataset.points;
+
+                if (questionId) {
+                    // Set form values
+                    document.getElementById("edit_question_text").value = questionText;
+                    document.getElementById("edit_option_a").value = optionA;
+                    document.getElementById("edit_option_b").value = optionB;
+                    document.getElementById("edit_option_c").value = optionC;
+                    document.getElementById("edit_option_d").value = optionD;
+                    document.getElementById("edit_correct_answer").value = correctAnswer;
+                    document.getElementById("edit_points").value = points;
+
+                    // Set form action
+                    var form = document.getElementById("editForm");
+                    form.action = "/edit_question/" + questionId;
+
+                    // Show modal
+                    modal.style.display = "block";
+                }
+            });
+        });
+
+        // Close modal on click of close button
+        closeBtn.addEventListener("click", function () {
+            modal.style.display = "none";
+        });
+
+        // Close modal if user clicks outside of modal content
+        window.addEventListener("click", function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+
+        // Handle Exam Name Edit
+        const editIcon = document.getElementById('editIcon');
+        const confirmIcon = document.getElementById('confirmIcon');
+        const cancelIcon = document.getElementById('cancelIcon');
+        const examName = document.getElementById('examName');
+        const editExamNameInput = document.getElementById('editExamNameInput');
+
+        editIcon.addEventListener('click', () => {
+            examName.style.display = 'none';
+            editIcon.style.display = 'none';
+            editExamNameInput.style.display = 'inline-block';
+            confirmIcon.style.display = 'inline-block';
+            cancelIcon.style.display = 'inline-block';
+        });
+
+        cancelIcon.addEventListener('click', () => {
+            examName.style.display = 'inline-block';
+            editIcon.style.display = 'inline-block';
+            editExamNameInput.style.display = 'none';
+            confirmIcon.style.display = 'none';
+            cancelIcon.style.display = 'none';
+        });
+
+        confirmIcon.addEventListener('click', () => {
+            const newName = editExamNameInput.value;
+
+            fetch('/edit_exam_name/{{ exam.id }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: newName })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        examName.textContent = newName;
+                        examName.style.display = 'inline-block';
+                        editIcon.style.display = 'inline-block';
+                        editExamNameInput.style.display = 'none';
+                        confirmIcon.style.display = 'none';
+                        cancelIcon.style.display = 'none';
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>

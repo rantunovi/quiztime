@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        nav {
+            background-color: #5e17eb;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .login-button {
+            background-color: #5e17eb;
+        }
+
+        .login-button:hover {
+            background-color: #4b0eaf;
+        }
+
+        .form-container {
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <nav class="bg-gray-50 p-2 shadow" style="background-color: #5e17eb;">
+        <div class="container mx-auto flex items-center justify-center">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-12 w-17">
+            <div class="ml-2">
+                {% if session.get('lang', 'en') == 'en' %}
+                <a href="{{ url_for('main.set_language', language='hr') }}">
+                    <img src="{{ url_for('static', filename='img/uk.png') }}" alt="Switch to Croatian"
+                        class="flag-icon">
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.set_language', language='en') }}">
+                    <img src="{{ url_for('static', filename='img/hr.png') }}" alt="Switch to English" class="flag-icon">
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-20 px-4">
+        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md form-container">
+            <h2 class="text-2xl font-semibold text-center mb-4 text-[#5e17eb]">{{ get_translation('login') }}</h2>
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="text-red-500 text-sm mb-4">
+                {% for message in messages %}
+                <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('main.login') }}" method="post" class="space-y-4">
+                {{ form.hidden_tag() }}
+                <div>
+                    {{ form.email.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.email(class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2
+                    focus:ring-blue-500") }}
+                    {% for error in form.email.errors %}
+                    <div class="text-red-500 text-sm">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div>
+                    {{ form.password.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.password(class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2
+                    focus:ring-blue-500") }}
+                    {% for error in form.password.errors %}
+                    <div class="text-red-500 text-sm">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <button type="submit"
+                    class="w-full login-button text-white py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{{
+                    get_translation('login') }}</button>
+            </form>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('main.register') }}" class="text-blue-500 hover:underline">{{
+                    get_translation('no_account') }}</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Lobby</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        nav {
+            background-color: #5e17eb;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .username-text {
+            color: #ffffff;
+        }
+
+        .logout-button {
+            background-color: #ff5e57;
+        }
+
+        .logout-button:hover {
+            background-color: #ff3b30;
+        }
+
+        .start-exam-button {
+            background-color: #5e17eb;
+        }
+
+        .start-exam-button:hover {
+            background-color: #4b0eaf;
+        }
+
+        .student-list-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px 0;
+        }
+
+        .exam-lobby-container {
+            border: 1px solid #e5e7eb;
+            padding: 25px;
+            border-radius: 8px;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script type="text/javascript">
+        var user_role = "{{ current_user.role }}";
+        var exam_code = "{{ exam.code }}";
+    </script>
+</head>
+
+<body class="bg-white">
+    <nav class="fixed w-full top-0 bg-gray-50 p-2 shadow" style="background-color: #5e17eb;">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ url_for('main.index') }}">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-12 w-17">
+                </a>
+            </div>
+            {% if current_user.is_authenticated %}
+            <div class="flex items-center space-x-4">
+                {% if session.get('lang', 'en') == 'en' %}
+                <a href="{{ url_for('main.set_language', language='hr') }}">
+                    <img src="{{ url_for('static', filename='img/uk.png') }}" alt="Switch to Croatian"
+                        class="flag-icon">
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.set_language', language='en') }}">
+                    <img src="{{ url_for('static', filename='img/hr.png') }}" alt="Switch to English" class="flag-icon">
+                </a>
+                {% endif %}
+                <span class="username-text font-medium">{{ current_user.first_name }} {{ current_user.last_name
+                    }}</span>
+                <a href="{{ url_for('main.logout') }}" class="text-white logout-button px-4 py-2 rounded-lg">
+                    {{get_translation('logout') }}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-20 px-4">
+        <div class="max-w-lg mx-auto bg-white exam-lobby-container">
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-6">{{ exam.code }}</h1>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ get_translation('participants') }} (<span
+                    id="student_count">{{
+                    students|length }}</span>):</h2>
+            <ul id="students_list" class="mb-6">
+                {% for student in students %}
+                <li class="student-list-item text-gray-700">{{ student.first_name }} {{ student.last_name }}</li>
+                {% endfor %}
+            </ul>
+            <button id="start-exam-button" class="start-exam-button text-white py-2 px-4 rounded-lg w-full"
+                data-exam-id="{{ exam.id }}">
+                {{ get_translation('start_exam') }}
+            </button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

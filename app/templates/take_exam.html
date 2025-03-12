@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Exam</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        nav {
+            background-color: #5e17eb;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .username-text {
+            color: #ffffff;
+        }
+
+        .logout-button {
+            background-color: #ff5e57;
+        }
+
+        .logout-button:hover {
+            background-color: #ff3b30;
+        }
+
+        .question-container {
+            border: 1px solid #e5e7eb;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .option-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .option-box:hover {
+            background-color: #e5e7eb;
+        }
+
+        .option-box:active {
+            background-color: #d1d5db;
+        }
+
+        .disabled-message {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #5e17eb;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script type="text/javascript">
+        var user_role = "{{ current_user.role }}";
+        var exam_code = "{{ exam.code }}";
+        var questions = {{ questions | tojson }};
+    </script>
+</head>
+
+<body class="bg-white">
+    <nav class="fixed w-full top-0 bg-gray-50 p-2 shadow" style="background-color: #5e17eb;">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ url_for('main.index') }}">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-12 w-17">
+                </a>
+            </div>
+            {% if current_user.is_authenticated %}
+            <div class="flex items-center space-x-4">
+                {% if session.get('lang', 'en') == 'en' %}
+                <a href="{{ url_for('main.set_language', language='hr') }}">
+                    <img src="{{ url_for('static', filename='img/uk.png') }}" alt="Switch to Croatian"
+                        class="flag-icon">
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.set_language', language='en') }}">
+                    <img src="{{ url_for('static', filename='img/hr.png') }}" alt="Switch to English" class="flag-icon">
+                </a>
+                {% endif %}
+                <span class="username-text font-medium">{{ current_user.first_name }} {{ current_user.last_name
+                    }}</span>
+                <a href="{{ url_for('main.logout') }}" class="text-white logout-button px-4 py-2 rounded-lg">{{
+                    get_translation('logout') }}</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-20 px-4">
+        <div id="question_container" class="question-container">
+            <div>
+                <h5 id="question_text" class="text-xl font-semibold text-gray-800 mb-4"></h5>
+                <div id="options_container" class="flex flex-col"></div>
+            </div>
+        </div>
+        <div id="completion_message" class="disabled-message hidden">{{
+            get_translation('answered_all_questions') }}</div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
